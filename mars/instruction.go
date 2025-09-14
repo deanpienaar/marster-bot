@@ -22,7 +22,7 @@ type RotationInstruction struct {
 }
 
 func (r RotationInstruction) String() string {
-	return fmt.Sprintf("Rotate (%d)", r.Orientation)
+	return fmt.Sprintf("Rotate (%s)", string(r.Orientation))
 }
 
 func (r RotationInstruction) isInstruction() {}
