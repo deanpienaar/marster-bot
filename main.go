@@ -5,99 +5,83 @@ import (
 	"context"
 	"fmt"
 	"log"
-	"marster-bot/internal/input"
-	"marster-bot/internal/output"
-	"marster-bot/internal/rover"
+	"marster-bot/input"
+	"marster-bot/mars"
+	"marster-bot/output"
 	"os"
 
 	"github.com/urfave/cli/v3"
 )
 
-func calculateEndPositionByCollapse(instructions string) {
-	currentDirection := rover.North
-	movement := map[rover.Direction]int{
-		rover.North: 0,
-		rover.East:  0,
-		rover.South: 0,
-		rover.West:  0,
+func processRover(console *output.Console, grid *mars.Grid, roverNum int) error {
+	console.Blank()
+	console.Header(fmt.Sprintf("Rover #%d", roverNum))
+	console.Divider()
+
+	rover, err := input.CollectRoverFromInput(console, grid)
+	if err != nil {
+		return err
 	}
 
-	for _, char := range instructions {
-		switch char {
-		case 'F':
-			movement[currentDirection] += 1
-			break
-		case 'R':
-			currentDirection = rover.North
-			break
-		case 'L':
-			currentDirection = rover.South
-			break
+	instructions, err := input.CollectInstructionsFromInput(console)
+	if err != nil {
+		return err
+	}
+
+	// Process the rover (placeholder for now)
+	console.Debug("No. instructions: %d", len(*instructions))
+	console.Blank()
+	console.Info("Processing rover movements...")
+
+	for _, instruction := range *instructions {
+		console.Debug("Current position: (%d, %d) %s", rover.Position.X, rover.Position.Y, rover.Direction)
+		console.Debug("Processing instruction: %v", instruction)
+		err := rover.Instruct(console, instruction)
+
+		if err != nil {
+			return err
 		}
 	}
 
+	console.Success("Final position: (%d,%d) %s", rover.Position.X, rover.Position.Y, rover.Direction)
+
+	return nil
 }
 
-func runRoverSimulation(reader *bufio.Reader, console *output.Console) error {
+func runRoverSimulation(console *output.Console) error {
 	console.HeaderWithBorder("Mars Rover Explorer")
 	console.Blank()
 
-	// Get grid boundaries
-	console.Prompt("Enter grid upper-right coordinates (x,y): ")
-	gridInput, err := reader.ReadString('\n')
+	grid, err := input.CollectGridFromInput(console)
+
 	if err != nil {
-		console.Error("Failed to read grid boundaries: %v", err)
 		return err
 	}
 
-	gridBounds, err := input.ParseGridBounds(gridInput)
-	if err != nil {
-		console.Error("Invalid grid boundaries: %v", err)
-		return err
+	roverNum := 1
+	for {
+		err := processRover(console, grid, roverNum)
+		if err != nil {
+			if err.Error() == "exit" {
+				console.Blank()
+				console.Success("Thank you for using Mars Rover Explorer!")
+				break
+			}
+			console.Error("Error processing rover #%d: %v", roverNum, err)
+
+			// If there was an error with this rover, ask if they want to try again
+			response, _ := console.Prompt("Would you like to add another rover? (Y/n): ")
+			if response != "" && response != "y" {
+				console.Success("Thank you for using Mars Rover Explorer!")
+				break
+			}
+
+		}
+
+		roverNum++
+		console.Blank()
+		console.Divider()
 	}
-	console.Success("Grid established: %dx%d", gridBounds.MaxX, gridBounds.MaxY)
-
-	// Get rover starting position
-	console.Prompt("Enter rover position and direction (x y D): ")
-	positionInput, err := reader.ReadString('\n')
-	if err != nil {
-		console.Error("Failed to read rover position: %v", err)
-		return err
-	}
-
-	roverPos, err := input.ParseRoverPosition(positionInput, gridBounds)
-	if err != nil {
-		console.Error("Invalid rover position: %v", err)
-		return err
-	}
-	console.Success("Rover positioned at (%d, %d) facing %s", roverPos.X, roverPos.Y, roverPos.Direction)
-
-	// Get movement instructions
-	console.Prompt("Enter movement instructions (R=Right, L=Left, F=Forward): ")
-	instructionInput, err := reader.ReadString('\n')
-	if err != nil {
-		console.Error("Failed to read instructions: %v", err)
-		return err
-	}
-
-	instructions, err := input.ValidateInstructions(instructionInput)
-	if err != nil {
-		console.Error("Invalid instructions: %v", err)
-		return err
-	}
-	console.Success("Instructions validated: %s", instructions.Commands)
-
-	marsRover := rover.NewRover(roverPos.X, roverPos.Y, roverPos.Direction)
-
-	console.Blank()
-	console.Divider()
-	console.Info("Processing rover movements...")
-	console.Data("Grid size", fmt.Sprintf("%dx%d", gridBounds.MaxX, gridBounds.MaxY))
-	console.Data("Starting position", fmt.Sprintf("(%d, %d) %s", marsRover.Position.X, marsRover.Position.Y, marsRover.Direction))
-	console.Data("Instructions", instructions.Commands)
-	console.Divider()
-	console.Blank()
-	console.Warning("Movement execution not yet implemented")
 
 	return nil
 }
@@ -106,10 +90,18 @@ func main() {
 	app := &cli.Command{
 		Name:  "Marster Bot",
 		Usage: "A Mars rover navigation simulator",
+		Flags: []cli.Flag{
+			&cli.BoolFlag{
+				Name:  "debug",
+				Usage: "Enable debug output",
+				Value: false,
+			},
+		},
 		Action: func(ctx context.Context, c *cli.Command) error {
+			debugMode := c.Bool("debug")
 			reader := bufio.NewReader(os.Stdin)
-			console := output.NewConsole()
-			return runRoverSimulation(reader, console)
+			console := output.NewConsole(*reader, debugMode)
+			return runRoverSimulation(console)
 		},
 	}
 
