@@ -10,7 +10,6 @@ import (
 )
 
 func CollectGridFromInput(console *output.Console) (*mars.Grid, error) {
-	// Get grid boundaries (only once)
 	gridInput, err := console.Prompt("Enter grid upper-right coordinates (x,y): ")
 	if err != nil {
 		console.Error("Failed to read grid boundaries: %v", err)
@@ -121,7 +120,6 @@ func CollectInstructionsFromInput(console *output.Console) (*[]mars.Instruction,
 			instruction = mars.NewOrientationInstruction(mars.Right)
 		case 'L':
 			instruction = mars.NewOrientationInstruction(mars.Left)
-		// Case is always true, but if we add a
 		case 'F':
 			instruction = mars.NewMovementInstruction(1)
 		default:
