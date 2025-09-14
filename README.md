@@ -49,3 +49,24 @@ go test -v ./...
 ```bash
 go build -o marster-bot
 ```
+
+## Technical Decisions
+### Input/Output
+The intention is for these modules to have new and other mechanisms for input/output. Right now
+Console is way too strongly coupled.
+
+### Parser
+Validation currently takes place within the parser but could be moved into a separate module for mixing and matching
+input mechanisms.
+
+### Running the Simulation
+Concurrency: The simulation is currently single-threaded and would require thread-safe maps if we were to allow processing
+multiple rovers at once. This does not seem necessary yet; especially given the only existing input mechanism is
+console.
+
+Entrypoint: The entrypoint is doing a lot of work that has to be repeated in tests. This should be refactored so
+that the engine is available across whichever input we are using.
+
+### Extensibility
+Capability has been added for instructions like moving backwards (B), turning around (T), and moving at longer distances (F3/B2), but these
+are not yet implemented.
