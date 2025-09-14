@@ -75,7 +75,6 @@ func runRoverSimulation(console *output.Console) error {
 				console.Success("Thank you for using Mars Rover Explorer!")
 				break
 			}
-
 		}
 
 		roverNum++
