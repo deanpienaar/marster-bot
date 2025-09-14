@@ -34,7 +34,7 @@ func processRover(console *output.Console, grid *mars.Grid, roverNum int) error 
 	console.Info("Processing rover movements...")
 
 	for _, instruction := range *instructions {
-		console.Debug("Current position: (%d, %d) %s", rover.Position.X, rover.Position.Y, rover.Direction)
+		console.Debug("Current position: %d %d %s", rover.Position.X, rover.Position.Y, rover.Direction)
 		console.Debug("Processing instruction: %v", instruction)
 		err := rover.Instruct(console, instruction)
 
@@ -43,7 +43,7 @@ func processRover(console *output.Console, grid *mars.Grid, roverNum int) error 
 		}
 	}
 
-	console.Success("Final position: (%d,%d) %s", rover.Position.X, rover.Position.Y, rover.Direction)
+	console.Success("Final position:  %d %d %s", rover.Position.X, rover.Position.Y, rover.Direction)
 
 	return nil
 }
