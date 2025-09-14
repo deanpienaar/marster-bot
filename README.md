@@ -51,6 +51,16 @@ go build -o marster-bot
 ```
 
 ## Technical Decisions
+### Choice of Go
+We chose Go for its ease in setting up the repo, as well as compiling the program. It also had nice lightweight utils
+for building CLI apps. It's super easy to get started, and simple enough for the project timelines.
+
+Other options included:
+* Python + Commander lib: Python is very finicky to set up if one does not have it running already, but Commander is awesome!
+* TypeScript + oclif: A little too familiar in terms of challenges, can be harder to read and maintain than Go's simplicity.
+* Rust + clap: Rust would've been great with longer time constraints.
+* .NET: A little too heavy
+
 ### Input/Output
 The intention is for these modules to have new and other mechanisms for input/output. Right now
 Console is way too strongly coupled.
