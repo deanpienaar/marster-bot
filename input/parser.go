@@ -107,6 +107,9 @@ func CollectInstructionsFromInput(console *output.Console) (*[]mars.Instruction,
 	if len(instructionInput) == 0 {
 		return nil, fmt.Errorf("instructions cannot be empty")
 	}
+	if len(instructionInput) > 100 {
+		return nil, fmt.Errorf("instructions cannot be longer than 100 characters")
+	}
 
 	var instructions []mars.Instruction
 
